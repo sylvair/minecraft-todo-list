@@ -25,8 +25,10 @@ git clone https://github.com/sylvair/minecraft-todo-list
 - **Kaydet** butonuyla ilerlemeni JSON dosyasına kaydet, **Yükle** butonuyla geri yükle.
 - **Dışa Aktar** butonuyla listeni `.txt` formatında indirebilirsin.
 
-## Ekran Görüntüsü
-*(Buraya proje ekran görüntüsü ekleyebilirsin)*
+## Önizleme
+```bash
+https://sylvair.github.io/minecraft-todo-list/
+```
 
 ## Lisans
 Bu proje MIT lisansı ile lisanslanmıştır. Dilediğiniz gibi kullanabilir ve geliştirebilirsiniz.
