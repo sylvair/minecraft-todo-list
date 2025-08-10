@@ -15,7 +15,7 @@ Bu proje, **Minecraft Survival** oynayan oyuncular için adım adım ilerleme re
 ## Kurulum
 1. Bu projeyi bilgisayarına klonla veya ZIP olarak indir.
 ```bash
-git clone https://github.com/kullanici-adi/minecraft-survival-rehberi.git
+git clone https://github.com/sylvair/minecraft-todo-list
 ```
 2. `index.html` dosyasını tarayıcıda aç.
 
