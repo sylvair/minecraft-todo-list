@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Minecraft Survival Rehberi</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --accent:#16a34a; --muted:#94a3b8; --glass: rgba(255,255,255,0.04);
+      --radius:14px; --gap:14px; font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; background:linear-gradient(180deg,#071026 0%, #071724 60%); color:#e6eef6; -webkit-font-smoothing:antialiased; padding:28px;
+      display:flex; align-items:flex-start; justify-content:center;
+    }
+    .wrap{max-width:1100px; width:100%;}
+    header{display:flex; gap:18px; align-items:center; margin-bottom:18px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#0ea5a3);display:flex;align-items:center;justify-content:center;font-weight:700;color:#042023}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}
+
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+    .card{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 6px 18px rgba(2,6,23,0.6);}
+
+    .topbar{display:flex;gap:10px;align-items:center}
+    select, button, input[type=text]{background:var(--glass); border:1px solid rgba(255,255,255,0.03); color:inherit; padding:8px 10px; border-radius:10px}
+    button.primary{background:linear-gradient(90deg,var(--accent),#22c55e); color:#042023; font-weight:600}
+
+    .layout{display:grid;grid-template-columns:360px 1fr; gap:16px}
+
+    .sidebar{position:sticky; top:28px; align-self:start}
+    .paths{display:flex;flex-direction:column; gap:8px}
+    .path{padding:10px;border-radius:10px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    .path:hover{background:rgba(255,255,255,0.02)}
+    .path.active{background:linear-gradient(90deg, rgba(22,163,74,0.12), rgba(16,185,129,0.06)); border:1px solid rgba(16,185,129,0.12)}
+    .small{font-size:12px;color:var(--muted)}
+
+    .content .category{margin-bottom:16px}
+    .category h2{display:flex;justify-content:space-between;align-items:center;margin:0 0 8px 0;font-size:16px}
+    .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+    .step{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent); padding:10px;border-radius:10px;display:flex;gap:10px;align-items:flex-start}
+    .step .meta{margin-left:auto;text-align:right}
+    .duration{font-size:12px;color:var(--muted)}
+    .step input[type=checkbox]{transform:scale(1.18)}
+
+    .footerbar{display:flex;justify-content:space-between;align-items:center;gap:10px; margin-top:12px}
+    .progress{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;flex:1}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#22c55e); width:0%}
+
+    @media (max-width:900px){
+      .layout{grid-template-columns:1fr;}
+      .sidebar{position:static}
+    }
+
+    /* small helpers */
+    .muted{color:var(--muted)}
+    .pill{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:999px;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="logo">MC</div>
+      <div>
+        <h1>Minecraft Survival — Yapılacaklar Rehberi</h1>
+        <p class="lead">Adım adım, kategori kategori ve tercihlere göre yollar. Görevleri işaretle, ilerlemeni kaydet.</p>
+      </div>
+    </header>
+
+    <div class="controls card topbar">
+      <div style="display:flex;gap:8px;align-items:center">
+        <label class="small muted">Tercih:</label>
+        <select id="pathSelect">
+          <option value="all">Tüm Yollar (Önerilen Sıra)</option>
+          <option value="miner">Madenci Yolu</option>
+          <option value="farmer">Çiftçi Yolu</option>
+          <option value="fighter">Savaşçı Yolu</option>
+          <option value="enchanter">Büyücü Yolu</option>
+          <option value="architect">Mimar Yolu</option>
+        </select>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:8px">
+        <input id="search" type="text" placeholder="Ara... (ör. elmas, blaze)" />
+        <button id="clearBtn">Sıfırla</button>
+        <button id="exportBtn" class="primary">Görevleri İndir</button>
+      </div>
+    </div>
+
+    <main class="layout">
+      <aside class="sidebar">
+        <div class="card" style="padding:12px">
+          <h3 style="margin:0 0 8px 0">Yollar (Kısa Özet)</h3>
+          <div class="paths" id="pathList">
+            <div class="path active" data-path="all"><div>Önerilen</div><div class="small muted">Denge</div></div>
+            <div class="path" data-path="miner"><div>Madenci</div><div class="small muted">Hızlı kaynak</div></div>
+            <div class="path" data-path="farmer"><div>Çiftçi</div><div class="small muted">Sürdürülebilir</div></div>
+            <div class="path" data-path="fighter"><div>Savaşçı</div><div class="small muted">PvE / Boss</div></div>
+            <div class="path" data-path="enchanter"><div>Büyücü</div><div class="small muted">Enchant & XP</div></div>
+            <div class="path" data-path="architect"><div>Mimar</div><div class="small muted">Büyük inşa</div></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px;padding:12px">
+          <h4 style="margin:0 0 8px 0">İlerlemen</h4>
+          <div class="footerbar">
+            <div class="pill">Tamamlanan: <strong id="doneCount">0</strong>/<span id="totalCount">0</span></div>
+            <div class="progress" title="İlerleme">
+              <i id="progressBar"></i>
+            </div>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button id="saveBtn">Kaydet</button>
+            <button id="loadBtn">Yükle</button>
+            <button id="resetBtn">Temizle</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="content">
+        <!-- categories injected by JS -->
+      </section>
+    </main>
+
+  </div>
+
+<script>
+// Data model: categories -> steps (text, duration in minutes, paths array)
+const data = [
+  {id:'start', title:'Başlangıç Aşaması (İlk Gün)', desc:'Hayatta kalmak, temel kaynakları toplamak, güvenli barınak.', est:'10-20 dk', steps:[
+    {id:'chopWood', text:'Ağaç kes — odun elde et', dur:'2-3 dk', paths:['all','architect','farmer']},
+    {id:'craftTable', text:'Crafting table ve temel çubuklar', dur:'1 dk', paths:['all']},
+    {id:'stoneTools', text:'Taş aletlere geç (stone pickaxe/axe/sword)', dur:'2-3 dk', paths:['all','miner','fighter']},
+    {id:'coal', text:'Kömür veya odun kömürü bul — meşale yap', dur:'3-4 dk', paths:['all','miner']},
+    {id:'food', text:'Yemek kaynağı bul (hayvan veya tarım başlat)', dur:'5 dk', paths:['all','farmer']},
+    {id:'shelter', text:'Gece gelmeden barınak yap', dur:'5-10 dk', paths:['all','architect']}
+  ]},
+
+  {id:'basics', title:'Temel Kaynak Gelişimi', desc:'Savunma, düzenli kaynak ve demir dönemi.', est:'30-60 dk', steps:[
+    {id:'iron', text:'Demir bul — demir alet ve zırh', dur:'10-15 dk', paths:['all','miner','fighter']},
+    {id:'farm', text:'Tarım alanı kur (buğday, patates, havuç)', dur:'10 dk', paths:['all','farmer']},
+    {id:'breed', text:'Hayvanları çiftleştir (inek, tavuk, koyun)', dur:'10 dk', paths:['all','farmer']},
+    {id:'mineSystem', text:'Güvenli maden sistemi oluştur', dur:'15 dk', paths:['all','miner']},
+    {id:'bed', text:'Yatak yap — spawn güvenle', dur:'1-2 dk', paths:['all']}
+  ]},
+
+  {id:'mid', title:'Orta Seviye Gelişim', desc:'Elmas, enchant sistemi ve XP.', est:'1-3 saat', steps:[
+    {id:'diamond', text:'Elmas bul', dur:'20-40 dk', paths:['all','miner','fighter']},
+    {id:'upgrade', text:'Zırh ve aletleri elmasa yükselt', dur:'15 dk', paths:['all','fighter']},
+    {id:'obsidian', text:'Obsidyen kaz', dur:'5-10 dk', paths:['all']},
+    {id:'enchantTable', text:'Büyü masası & kitap rafları kur', dur:'20-30 dk', paths:['all','enchanter']},
+    {id:'xpFarm', text:'XP çiftliği kur (mob farm veya hayvanlar)', dur:'30-60 dk', paths:['all','enchanter']}
+  ]},
+
+  {id:'nether', title:'Nether Hazırlığı ve Nether', desc:'Blaze, potion malzemeleri ve nether kaynakları.', est:'1-2 saat', steps:[
+    {id:'portal', text:'Nether portalı yap', dur:'5 dk', paths:['all']},
+    {id:'blaze', text:'Blaze rod topla (blaze spawner)', dur:'20-30 dk', paths:['all','enchanter','fighter']},
+    {id:'wart', text:'Nether wart topla', dur:'5-10 dk', paths:['all']},
+    {id:'netherRes', text:'Ghast tear / magma cream / glowstone topla', dur:'20-30 dk', paths:['all']},
+    {id:'potions', text:'Potion stand ve temel potionlar hazırla', dur:'15-20 dk', paths:['all','enchanter']}
+  ]},
+
+  {id:'endPrep', title:'End Hazırlığı', desc:'Ender pearl, Eye of Ender ve iyi ekipman.', est:'1-2 saat', steps:[
+    {id:'pearls', text:'Enderman -> ender pearl topla', dur:'30-60 dk', paths:['all','fighter']},
+    {id:'eye', text:'Blaze powder ile Eye of Ender yap', dur:'5 dk', paths:['all']},
+    {id:'findPortal', text:'End portal bul ve aktif et', dur:'15-30 dk', paths:['all']},
+    {id:'gear', text:'İyi enchantlar yap (yay, zırh)', dur:'30-60 dk', paths:['all','enchanter']},
+    {id:'prepSupplies', text:'Ok, yemek ve iksir stoğu hazırla', dur:'10-20 dk', paths:['all']}
+  ]},
+
+  {id:'dragon', title:'Ender Dragon Savaşı', desc:'Kristalleri yok et, ejderhayı yen.', est:'30-60 dk', steps:[
+    {id:'destroyCrystals', text:'Kristalleri yok et', dur:'5-10 dk', paths:['all','fighter']},
+    {id:'killDragon', text:'Ejderhayı yok et', dur:'10-30 dk', paths:['all']},
+    {id:'egg', text:'Ejderha yumurtası al', dur:'5 dk', paths:['all']}
+  ]},
+
+  {id:'post', title:'Oyunun Sonrası (Post-Game)', desc:'Elytra, Beacon, otomasyonlar ve büyük projeler.', est:'Sınırsız', steps:[
+    {id:'elytra', text:'End şehirlerini keşfet — Elytra bul', dur:'30-60 dk', paths:['all','architect']},
+    {id:'wither', text:'Wither kes — Beacon malzemesi topla', dur:'30-60 dk', paths:['all','fighter']},
+    {id:'auto', text:'Otomatik sistemler kur (demir farm, köylü ticareti)', dur:'1-5 saat', paths:['all','architect','farmer']},
+    {id:'megaBuild', text:'Büyük inşaat projeleri (şehir, kale)', dur:'Sınırsız', paths:['architect']},
+    {id:'adv', text:'Achievement/Advancement tamamlama', dur:'Sınırsız', paths:['all']}
+  ]}
+];
+
+// Render
+const content = document.querySelector('.content');
+const pathSelect = document.getElementById('pathSelect');
+const pathList = document.getElementById('pathList');
+const search = document.getElementById('search');
+const totalCountEl = document.getElementById('totalCount');
+const doneCountEl = document.getElementById('doneCount');
+const progressBar = document.getElementById('progressBar');
+
+function render(pk='all', filter=''){
+  content.innerHTML='';
+  let total=0, done=0;
+  data.forEach(cat=>{
+    const catEl = document.createElement('div'); catEl.className='category card';
+    catEl.innerHTML = `<h2>${cat.title}<span class="small muted">${cat.est}</span></h2><p class="small muted">${cat.desc}</p>`;
+    const stepsEl = document.createElement('div'); stepsEl.className='steps';
+    cat.steps.forEach(step=>{
+      if(pk!=='all' && !step.paths.includes(pk)) return; // path filtering
+      if(filter && !step.text.toLowerCase().includes(filter.toLowerCase())) return;
+      total++;
+      const doneKey = 'mc_done_'+step.id;
+      const checked = localStorage.getItem(doneKey) === '1';
+      if(checked) done++;
+      const stepDiv = document.createElement('label'); stepDiv.className='step';
+      stepDiv.htmlFor = doneKey;
+      stepDiv.innerHTML = `
+        <input type="checkbox" id="${doneKey}" ${checked? 'checked':''} />
+        <div style="flex:1"><strong>${step.text}</strong><div class="small muted">Kategorisi: ${cat.title}</div></div>
+        <div class="meta"><div class="duration">${step.dur}</div></div>
+      `;
+      stepsEl.appendChild(stepDiv);
+    });
+    if(stepsEl.children.length) {
+      catEl.appendChild(stepsEl);
+      content.appendChild(catEl);
+    }
+  });
+  totalCountEl.textContent = total;
+  doneCountEl.textContent = done;
+  const pct = total? Math.round(done/total*100):0;
+  progressBar.style.width = pct + '%';
+
+  // attach listeners for checkboxes
+  document.querySelectorAll('.step input[type=checkbox]').forEach(cb=>{
+    cb.addEventListener('change', (e)=>{
+      const k = e.target.id; localStorage.setItem(k, e.target.checked? '1':'0'); render(pk, filter);
+    });
+  });
+}
+
+// initial render
+render('all','');
+
+// path quick list
+pathList.querySelectorAll('.path').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    pathList.querySelectorAll('.path').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    const p = el.getAttribute('data-path');
+    pathSelect.value = p;
+    render(p, search.value);
+  });
+});
+
+pathSelect.addEventListener('change', ()=>{
+  const v = pathSelect.value; pathList.querySelectorAll('.path').forEach(x=>{
+    x.classList.toggle('active', x.getAttribute('data-path')===v);
+  });
+  render(v, search.value);
+});
+
+search.addEventListener('input', ()=> render(pathSelect.value, search.value));
+
+// buttons
+document.getElementById('clearBtn').addEventListener('click', ()=>{ search.value=''; render(pathSelect.value,''); });
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  // save a snapshot of progress
+  const keys = Object.keys(localStorage).filter(k=>k.startsWith('mc_done_'));
+  const payload = {};
+  keys.forEach(k=> payload[k]=localStorage.getItem(k));
+  const blob = new Blob([JSON.stringify(payload)],{type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download='mc-progress.json'; a.click(); URL.revokeObjectURL(url);
+});
+
+document.getElementById('loadBtn').addEventListener('click', ()=>{
+  const input = document.createElement('input'); input.type='file'; input.accept='application/json';
+  input.onchange = ()=>{
+    const f = input.files[0]; if(!f) return;
+    const reader = new FileReader(); reader.onload = ()=>{
+      try{ const obj = JSON.parse(reader.result);
+        Object.keys(obj).forEach(k=> localStorage.setItem(k,obj[k]));
+        alert('İlerleme yüklendi.'); render(pathSelect.value, search.value);
+      }catch(e){ alert('Geçersiz dosya.'); }
+    }; reader.readAsText(f);
+  };
+  input.click();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(!confirm('Tüm görev işaretleri temizlensin mi?')) return;
+  Object.keys(localStorage).filter(k=>k.startsWith('mc_done_')).forEach(k=> localStorage.removeItem(k)); render(pathSelect.value, search.value);
+});
+
+// export visible tasks as text
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  let lines=[];
+  data.forEach(cat=>{
+    lines.push(`# ${cat.title} — ${cat.est}`);
+    cat.steps.forEach(s=>{
+      if(pathSelect.value!=='all' && !s.paths.includes(pathSelect.value)) return;
+      if(search.value && !s.text.toLowerCase().includes(search.value.toLowerCase())) return;
+      lines.push(`- ${s.text} (${s.dur})`);
+    });
+    lines.push('');
+  });
+  const blob = new Blob([lines.join('\n')],{type:'text/plain'});
+  const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='minecraft-survival-list.txt'; a.click(); URL.revokeObjectURL(url);
+});
+
+// keyboard: press P to toggle path select focus
+window.addEventListener('keydown', (e)=>{ if(e.key==='p' || e.key==='P'){ pathSelect.focus(); }});
+
+</script>
+</body>
+</html>
